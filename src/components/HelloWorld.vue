@@ -1,124 +1,75 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br />
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener"
-        >vue-cli documentation</a
-      >.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel"
-          target="_blank"
-          rel="noopener"
-          >babel</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-typescript"
-          target="_blank"
-          rel="noopener"
-          >typescript</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint"
-          target="_blank"
-          rel="noopener"
-          >eslint</a
-        >
-      </li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li>
-        <a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a>
-      </li>
-      <li>
-        <a href="https://forum.vuejs.org" target="_blank" rel="noopener"
-          >Forum</a
-        >
-      </li>
-      <li>
-        <a href="https://chat.vuejs.org" target="_blank" rel="noopener"
-          >Community Chat</a
-        >
-      </li>
-      <li>
-        <a href="https://twitter.com/vuejs" target="_blank" rel="noopener"
-          >Twitter</a
-        >
-      </li>
-      <li>
-        <a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a>
-      </li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li>
-        <a href="https://router.vuejs.org" target="_blank" rel="noopener"
-          >vue-router</a
-        >
-      </li>
-      <li>
-        <a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-devtools#vue-devtools"
-          target="_blank"
-          rel="noopener"
-          >vue-devtools</a
-        >
-      </li>
-      <li>
-        <a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener"
-          >vue-loader</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-          rel="noopener"
-          >awesome-vue</a
-        >
-      </li>
-    </ul>
-  </div>
+  <v-container>
+    <v-row class="text-center">
+      <v-col cols="12" v-if="token.length > 0">
+        <h2>You are logged in!</h2>
+        <v-text-field v-model="q" type="text"></v-text-field>
+        <v-btn @click="search">Search</v-btn>
+      </v-col>
+      <v-col cols="12" v-else>
+        <a :href="this.loginLink">
+          <v-btn>Login</v-btn>
+        </a>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+const scopes = [
+  "playlist-read-private",
+  "playlist-read-collaborative",
+  "user-library-read",
+  "user-read-recently-played",
+  "user-top-read",
+  "user-read-private",
+];
+
+const [client_id, redirect_uri] = [
+  process.env.VUE_APP_CLIENT_ID,
+  process.env.VUE_APP_REDIRECT_URI,
+];
 
 export default Vue.extend({
   name: "HelloWorld",
-  props: {
-    msg: String,
+  created: async function () {
+    const param = window.location?.href?.match(/(\?|#|&)access_token=([^&]*)/);
+    const token = param && param.length > 1 ? decodeURIComponent(param[2]) : "";
+    if (token) {
+      this.token = token;
+    }
+    try {
+      const response = await fetch("localhost:3001/api/getLyrics");
+      const json = await response.json();
+      console.log(json);
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  data: () => ({
+    loginLink: `https://accounts.spotify.com/authorize?client_id=${client_id}&scopes=${scopes.join(
+      ","
+    )}&redirect_uri=${redirect_uri}&response_type=token`,
+    token: "",
+    q: "",
+  }),
+  methods: {
+    async search() {
+      const response = await fetch(
+        `https://api.spotify.com/v1/search?query=${encodeURIComponent(
+          this.q
+        )}&offset=0&limit=20&type=track`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+        }
+      );
+      const json = await response.json();
+      console.log(json);
+    },
   },
 });
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
-</style>

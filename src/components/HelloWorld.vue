@@ -12,11 +12,21 @@
         </a>
       </v-col>
     </v-row>
+    <v-row>
+      <v-col cols="12" v-if="tracks && tracks.items">
+        <v-row v-for="track in tracks.items" :key="track.id">
+          <SongCard :track="track" />
+        </v-row>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+import Cookies from "js-cookie";
+import SongCard from "./SongCard/SongCard.vue";
+
 const scopes = [
   "playlist-read-private",
   "playlist-read-collaborative",
@@ -34,17 +44,24 @@ const [client_id, redirect_uri] = [
 export default Vue.extend({
   name: "HelloWorld",
   created: async function () {
-    const param = window.location?.href?.match(/(\?|#|&)access_token=([^&]*)/);
-    const token = param && param.length > 1 ? decodeURIComponent(param[2]) : "";
-    if (token) {
-      this.token = token;
+    const cookie = Cookies.get("spotify-access-token");
+    if (cookie) {
+      this.token = cookie;
+    } else {
+      const param = window.location?.href?.match(
+        /(\?|#|&)access_token=([^&]*)/
+      );
+      const token =
+        param && param.length > 1 ? decodeURIComponent(param[2]) : "";
+      if (token) {
+        this.token = token;
+        Cookies.set("spotify-access-token", token, {
+          expires: new Date(Date.now() + 3600 * 1000),
+        });
+      }
     }
-    try {
-      const response = await fetch("localhost:3001/api/getLyrics");
-      const json = await response.json();
-      console.log(json);
-    } catch (err) {
-      console.log(err);
+    if (window.location.href.includes("#access_token")) {
+      window.location.replace("/");
     }
   },
   data: () => ({
@@ -53,6 +70,7 @@ export default Vue.extend({
     )}&redirect_uri=${redirect_uri}&response_type=token`,
     token: "",
     q: "",
+    tracks: null,
   }),
   methods: {
     async search() {
@@ -68,8 +86,11 @@ export default Vue.extend({
         }
       );
       const json = await response.json();
-      console.log(json);
+      this.tracks = json.tracks;
     },
+  },
+  components: {
+    SongCard,
   },
 });
 </script>

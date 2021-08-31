@@ -28,13 +28,15 @@
         target="_blank"
         text
       >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
+        <span class="mr-2">LYRA</span>
       </v-btn>
     </v-app-bar>
 
     <v-main>
-      <HelloWorld />
+      <Start />
+      <div v-if="room.length">
+        <HelloWorld />
+      </div>
     </v-main>
   </v-app>
 </template>
@@ -42,16 +44,16 @@
 <script lang="ts">
 import Vue from "vue";
 import HelloWorld from "./components/HelloWorld.vue";
+import Start from "./views/Start/Start.vue";
 
 export default Vue.extend({
   name: "App",
-
+  data: () => ({
+    room: "",
+  }),
   components: {
+    Start,
     HelloWorld,
   },
-
-  data: () => ({
-    //
-  }),
 });
 </script>

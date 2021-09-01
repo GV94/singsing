@@ -9,14 +9,22 @@ const scrape = async (artist: string, track: string) => {
       let [first, ...rest] = w;
       return `${first.toUpperCase()}${rest.join("")}`;
     })
-    .join("-");
+    .join("-")
+    .split(",")
+    .join("");
   const trackSlug = track
     .split(" ")
     .map((w) => {
       let [first, ...rest] = w;
       return `${first.toUpperCase()}${rest.join("")}`;
     })
-    .join("-");
+    .join("-")
+    .split(",")
+    .join("");
+  console.log(
+    "Finding ",
+    `https://www.musixmatch.com/lyrics/${artistSlug}/${trackSlug}`
+  );
   const response = await fetch(
     `https://www.musixmatch.com/lyrics/${artistSlug}/${trackSlug}`,
     {
@@ -66,7 +74,7 @@ function getReqData(req: any) {
       // listen till the end
       req.on("end", () => {
         // send back the data
-        resolve(body);
+        resolve(JSON.parse(body));
       });
     } catch (error) {
       reject(error);
@@ -75,8 +83,10 @@ function getReqData(req: any) {
 }
 
 const server = http.createServer(async (req, res) => {
-  if (req.url === "/api/getLyrics" && req.method === "GET") {
+  console.log(req.url, req.method);
+  if (req.url === "/api/getLyrics" && req.method === "POST") {
     const data: any = await getReqData(req);
+    console.log(data, data.artist, data.track);
     if (!data.artist || !data.track) {
       res.writeHead(400);
       res.write("Bad Request");
@@ -86,8 +96,12 @@ const server = http.createServer(async (req, res) => {
 
     const { artist, track } = data;
     scrape(artist, track).then((lyric) => {
-      res.writeHead(200, { "Content-Type": "application/json" });
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      });
       res.write(JSON.stringify(lyric));
+      res.end();
     });
   }
 });

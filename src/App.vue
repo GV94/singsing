@@ -33,27 +33,41 @@
     </v-app-bar>
 
     <v-main>
-      <Start />
-      <div v-if="room.length">
-        <HelloWorld />
-      </div>
+      <router-view></router-view>
     </v-main>
   </v-app>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import HelloWorld from "./components/HelloWorld.vue";
-import Start from "./views/Start/Start.vue";
+import Cookies from "js-cookie";
 
 export default Vue.extend({
   name: "App",
   data: () => ({
     room: "",
+    token: "",
   }),
-  components: {
-    Start,
-    HelloWorld,
+  created: async function () {
+    const cookie = Cookies.get("spotify-access-token");
+    if (cookie) {
+      this.token = cookie;
+    } else {
+      const param = window.location?.href?.match(
+        /(\?|#|&)access_token=([^&]*)/
+      );
+      const token =
+        param && param.length > 1 ? decodeURIComponent(param[2]) : "";
+      if (token) {
+        this.token = token;
+        Cookies.set("spotify-access-token", token, {
+          expires: new Date(Date.now() + 3600 * 1000),
+        });
+      }
+    }
+    if (window.location.href.includes("#access_token")) {
+      window.location.replace("/");
+    }
   },
 });
 </script>

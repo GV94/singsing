@@ -1,0 +1,22 @@
+{
+  "name": "sing-sing-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "webscrape.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "nodemon -e ts server.ts",
+    "webscrape": "nodemon webscrape.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.10",
+    "node-fetch": "^2.5.6",
+    "socket.io": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.5.12",
+    "typescript": "^4.4.2"
+  }
+}

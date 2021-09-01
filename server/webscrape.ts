@@ -1,8 +1,8 @@
-const fetch = require("node-fetch");
-const cheerio = require("cheerio");
-const http = require("http");
+import * as cheerio from "cheerio";
+import http from "http";
+import fetch from "node-fetch";
 
-const scrape = async (artist, track) => {
+const scrape = async (artist: string, track: string) => {
   const artistSlug = artist
     .split(" ")
     .map((w) => {
@@ -26,20 +26,17 @@ const scrape = async (artist, track) => {
         "accept-language": "en,en-US;q=0.9,sv;q=0.8",
         "cache-control": "no-cache",
       },
-      referrerPolicy: "strict-origin-when-cross-origin",
-      body: null,
       method: "GET",
-      mode: "cors",
     }
   );
 
   const text = await response.text();
   const $ = cheerio.load(text);
   let nodes = $("span.lyrics__content__ok, span.lyrics__content__error");
-  let data = "";
-  nodes.map((n) => nodes[n].children.map((c) => (data += c.data)));
+  let data: string | string[] = "";
+  nodes.map((n) => nodes[n].children.map((c: any) => (data += c.data)));
   data = data.split("\n");
-  let parts = [[]];
+  let parts: string[][] = [[]];
   let currentPart = 0;
   for (let i = 0; i < data.length; i++) {
     if (data[i] === "") {
@@ -57,12 +54,12 @@ const scrape = async (artist, track) => {
   };
 };
 
-function getReqData(req) {
+function getReqData(req: any) {
   return new Promise((resolve, reject) => {
     try {
       let body = "";
       // listen to data sent by client
-      req.on("data", (chunk) => {
+      req.on("data", (chunk: any) => {
         // append the string version to the body
         body += chunk.toString();
       });
@@ -79,7 +76,7 @@ function getReqData(req) {
 
 const server = http.createServer(async (req, res) => {
   if (req.url === "/api/getLyrics" && req.method === "GET") {
-    const data = await getReqData(req);
+    const data: any = await getReqData(req);
     if (!data.artist || !data.track) {
       res.writeHead(400);
       res.write("Bad Request");

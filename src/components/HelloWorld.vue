@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row class="text-center">
-      <v-col cols="12" v-if="token.length > 0">
+      <v-col cols="12">
         <h2>You are logged in!</h2>
         <v-text-field v-model="q" type="text"></v-text-field>
         <v-btn @click="search">Search</v-btn>

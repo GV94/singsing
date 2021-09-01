@@ -48,26 +48,5 @@ export default Vue.extend({
     room: "",
     token: "",
   }),
-  created: async function () {
-    const cookie = Cookies.get("spotify-access-token");
-    if (cookie) {
-      this.token = cookie;
-    } else {
-      const param = window.location?.href?.match(
-        /(\?|#|&)access_token=([^&]*)/
-      );
-      const token =
-        param && param.length > 1 ? decodeURIComponent(param[2]) : "";
-      if (token) {
-        this.token = token;
-        Cookies.set("spotify-access-token", token, {
-          expires: new Date(Date.now() + 3600 * 1000),
-        });
-      }
-    }
-    if (window.location.href.includes("#access_token")) {
-      window.location.replace("/");
-    }
-  },
 });
 </script>
